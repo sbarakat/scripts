@@ -1,0 +1,111 @@
+#!/bin/bash
+
+###############################
+#
+# PHP
+# http://www.php.net/
+#
+# Configuration files
+# vi /etc/php/*
+#
+###############################
+
+
+####
+# PHP 5.3.8 - Install from sources
+# - http://www.php.net/downloads.php
+#
+
+# Dependencies
+yum install gcc \
+    curl-devel freetype-devel libc-client \
+    libc-client-devel libjpeg-devel libpng-devel \
+    libtool-ltdl-devel libxml2-devel mysql-devel aspell-devel gettext \
+    krb5-devel pcre pcre-devel;
+# libmcrypt libmcrypt-devel not avaliable in CentOS 6 (so we cant use phpMyAdmin)
+
+cd /usr/local/src;
+wget http://uk.php.net/get/php-5.3.8.tar.gz/from/this/mirror;
+echo 'f4ce40d5d156ca66a996dbb8a0e7666a  php-5.3.8.tar.gz' | md5sum -c;
+tar -xvzf php-5.3.8.tar.gz && cd php-5.3.8;
+
+./configure \
+    --with-libdir=lib64 \                      # for 64bit machines
+    --sysconfdir=/etc/php \
+    --with-config-file-path=/etc/php \
+    --with-mysql=/usr/lib \
+    --with-mysqli=/usr/bin/mysql_config \
+    --with-jpeg-dir=/usr/local \
+    --with-png-dir=/usr/lib \
+    --with-freetype-dir=/usr \
+    --with-gd \
+    --with-zlib \
+    --with-curl \
+    --with-pspell \
+    #--with-mcrypt=/usr/local \ ### broke
+    --with-mhash=/usr/local \
+    --with-kerberos \
+    --with-imap \
+    --with-imap-ssl \
+    --with-openssl \
+    --with-gettext \                           # used by PowerAdmin
+    --with-iconv \
+    --enable-gd-native-ttf \
+    --enable-mbstring \
+    --enable-soap \
+    --enable-zip \
+    --enable-ftp \
+    --enable-fpm;                              # used by nginx
+
+make && make install;
+
+cp php.ini-production /etc/php/php.ini;
+vi /etc/php/php.ini;
+# Very important to set the following
+#error_reporting = E_ALL & ~E_DEPRECATED & ~E_NOTICE
+#date.timezone = "Europe/London"
+
+
+####
+# Configure PHP for use with nginx
+#
+
+# These steps are needed for setting up php-fpm to be used with nginx
+cp sapi/fpm/init.d.php-fpm /etc/init.d/php-fpm;
+chmod +x /etc/init.d/php-fpm;
+vi /etc/init.d/php-fpm;
+#php_fpm_PID=/var/run/php-fpm.pid
+
+cp /etc/php/php-fpm.conf.default /etc/php/php-fpm.conf;
+vi /etc/php/php-fpm.conf;
+# Uncomment these
+#pid = /var/run/php-fpm.pid
+#pm.start_servers = 10
+#pm.min_spare_servers = 5
+#pm.max_spare_servers = 35
+
+/sbin/chkconfig php-fpm on;
+/etc/init.d/php-fpm start;
+
+# Test it
+echo '<?php phpinfo(); ?>' > /var/www/html/phpinfo.php;
+
+
+####
+# Configure PHP for use with Apache (this hasn't been tested in a while)
+#
+
+vi /etc/httpd/conf/httpd.conf;
+# Add
+#DirectoryIndex index.php index.html index.html.var
+#LoadModule php5_module /usr/lib/httpd/modules/libphp5.so
+#AddType application/x-httpd-php .php
+/etc/init.d/httpd restart;
+
+
+####
+# PHP 5.3.4 - Install from http://www.webtatic.com/
+#
+rpm --import http://mirror.centos.org/centos/RPM-GPG-KEY-CentOS-5;
+rpm -ivh http://repo.webtatic.com/yum/centos/5/`uname  -i`/webtatic-release-5-0.noarch.rpm;
+yum --enablerepo=webtatic install php php-cli php-mysql php-mbstring php-mcrypt php-gd php-xml php-pear php-pecl-memcache;

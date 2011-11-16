@@ -1,0 +1,27 @@
+#!/bin/bash
+
+###############################
+#
+# MySQL
+# http://dev.mysql.com/downloads/
+#
+# Configuration files
+# vi /etc/my.cnf
+#
+###############################
+
+####
+# MySQL - Install from yum
+#
+
+yum install mysql mysql-devel mysql-server;
+
+# Run on system startup and start now
+/sbin/chkconfig --levels 235 mysqld on;
+/etc/init.d/mysqld start;
+
+# Check its listening
+#netstat -tap | grep mysql;
+
+# Secure MySQL
+/usr/bin/mysql_secure_installation
