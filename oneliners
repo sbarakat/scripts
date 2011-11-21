@@ -1,0 +1,50 @@
+#!/bin/bash
+
+#
+# A collection of useful shell one liner commands
+#
+# Author: Sami Barakat <sami@sbarakat.co.uk>
+# Date: 21/11/2011
+#
+
+
+# Copy files in alphabetical order
+S=/source/path;P=/destination/path/MUSIC;find "$S" -type d -print0 | xargs -0 -ID mkdir -p "$P/D";find "$S" -type f -print0 | sort -zn | xargs -0 -IF cp -rv 'F' "$P/F";
+
+# Unpack all RAR files
+for x in */*.rar; do unrar x $x; done
+
+# Recursively md5 all files in a tree
+find ./ -type f -print0 | xargs -0 md5sum > .checksum.md5
+
+# Verify .checksum.md5 but only print failures
+md5sum --check .checksum.md5 | grep -v ": OK"
+
+# Delete files that contain searchword
+grep -lir "searchword" * | xargs rm
+
+# Move files that contain searchword
+grep -lir "searchword" * | xargs -I {} mv {} /some/folder/
+
+# Detach a process from shell
+firefox & disown; # useing disown
+nohup firefox &; # useing nohup
+
+# Copy somefile from remote server over SSH
+ssh root@example.com "cat somefile" > myfile
+
+# Remove all unused kernels with apt-get
+dpkg -l 'linux-*' | sed '/^ii/!d;/'"$(uname -r | sed "s/\(.*\)-\([^0-9]\+\)/\1/")"'/d;s/^[^ ]* [^ ]* \([^ ]*\).*/\1/;/[0-9]/!d' | xargs sudo apt-get purge
+
+# Monitor logs in Linux using tail
+find /var/log -type f -exec file {} \; | grep 'text' | cut -d' ' -f1 | sed -e's/:$//g' | grep -v '[0-9]$' | xargs tail -f
+
+# Run command at specified time
+echo 'rm /tmp/index.html' | at now + 1 minutes
+
+# Connect over sftp using MC
+cd #sh:root@example.com:/home/user
+
+# Change desktop background to the latest photo from Interfacelift
+u=http://interfacelift.com;a=Firefox/3.8;cd /tmp && wget -O b.jpg -q --user-agent="$a" "$u/$(wget -qO- --user-agent="$a" "$u/wallpaper_beta/downloads/date/hdtv/1080p/"|grep 'download.png'|sed 's/.*href="\([^"]*\)".*/\1/g'|head -n 1)";gconftool-2 -t string -s /desktop/gnome/background/picture_filename "/tmp/b.jpg"
+
