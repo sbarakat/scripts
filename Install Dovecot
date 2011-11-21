@@ -2,11 +2,11 @@
 
 ###############################
 #
-# Dovecot 2.0.15
+# Dovecot 2.0.16
 # http://www.dovecot.org/download.html
 #
 # Config Files
-# nano /etc/dovecot*.conf
+# vi /etc/dovecot/*.conf
 #
 # Note: This script expects the Postfix script to be run first
 #
@@ -20,18 +20,15 @@ chkconfig --del dovecot;
 yum remove dovecot;
 
 # Dependencies
-#yum install gcc gettext-devel; # didnt need this
+yum install gcc gettext-devel;
 
 # Download, compile and install
 cd /usr/local/src;
-wget http://www.dovecot.org/releases/2.0/dovecot-2.0.15.tar.gz;
-tar -xvzf dovecot-2.0.15.tar.gz && cd dovecot-2.0.15;
+wget http://www.dovecot.org/releases/2.0/dovecot-2.0.16.tar.gz;
+tar -xvzf dovecot-2.0.16.tar.gz && cd dovecot-2.0.16;
 ./configure --sysconfdir=/etc --with-mysql --libdir=/usr/lib64;
 make;
 make install;
-
-# Error
-#configure: WARNING: unrecognized options: --enable-header-install, --with-db
 
 # Setup Dovecot user
 /usr/sbin/useradd -s /sbin/nologin -r dovecot;
@@ -40,12 +37,13 @@ make install;
 
 # Secure devecot config files
 chmod 600 /etc/dovecot/dovecot*.conf;
-chown vmail /etc/dovecot/dovecot*.conf;
 chown root:root /etc/dovecot/*;
 
 touch /var/log/dovecot-deliver.log;
 touch /var/log/dovecot-deliver-errors.log;
 chmod 666 /var/log/dovecot-deliver*;
+
+# Add the init script (from the bottom of this file)
 
 # Run on system startup and start now
 /sbin/chkconfig --levels 235 dovecot on;
@@ -53,20 +51,20 @@ chmod 666 /var/log/dovecot-deliver*;
 
 
 ####
-# Adding Pigeonhole 0.2.4
+# Adding Pigeonhole 0.2.5
 # http://pigeonhole.dovecot.org/download.html
 #
 
 cd /usr/local/src;
-wget http://www.rename-it.nl/dovecot/2.0/dovecot-2.0-pigeonhole-0.2.4.tar.gz;
-tar -xvzf dovecot-2.0-pigeonhole-0.2.4.tar.gz && cd dovecot-2.0-pigeonhole-0.2.4;
+wget http://www.rename-it.nl/dovecot/2.0/dovecot-2.0-pigeonhole-0.2.5.tar.gz;
+tar -xvzf dovecot-2.0-pigeonhole-0.2.5.tar.gz && cd dovecot-2.0-pigeonhole-0.2.5;
 ./configure --with-dovecot=/usr/lib64/dovecot;
 make && make install;
 
 # Add this to dovecot.conf
 protocol lda {
-    postmaster_address = postmaster@sbarakat.co.uk
-    hostname = mail.sbarakat.co.uk
+    postmaster_address = postmaster@example.com
+    hostname = mail.example.com
     mail_plugins = pigeonhole
 
     log_path = /var/log/dovecot-deliver-errors.log
@@ -118,7 +116,6 @@ dovecot   unix  -       n       n       -       -       pipe
 # Change this setting in /etc/postfix/main.cf
 #virtual_transport                       = virtual
 virtual_transport                       = dovecot
-
 
 # Restart the services
 /etc/init.d/postfix restart;
