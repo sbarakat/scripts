@@ -2,7 +2,7 @@
 
 ###############################
 #
-# nginx 1.0.9
+# nginx 1.0.10
 # http://nginx.org/ 
 #
 # Configuration files
@@ -15,8 +15,8 @@ yum install gcc make autoconf automake zlib-devel openssl-devel pcre pcre-devel;
 
 # Download, compile and install
 cd /usr/local/src;
-wget http://nginx.org/download/nginx-1.0.9.tar.gz;
-tar -xvzf nginx-1.0.9.tar.gz && cd nginx-1.0.9;
+wget http://nginx.org/download/nginx-1.0.10.tar.gz;
+tar -xvzf nginx-1.0.10.tar.gz && cd nginx-1.0.10;
 ./configure --prefix=/usr/local/nginx \
     --conf-path=/etc/nginx/nginx.conf \
     --pid-path=/var/run/nginx.pid \
