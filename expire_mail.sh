@@ -1,9 +1,14 @@
 #!/bin/bash
 
+#
+# Author: Sami Barakat <sami@sbarakat.co.uk>
+# Date: 21/11/2011
+#
 # This script is used on a mail server to collect email messages from the Junk
 # and Trash folders. Emails that are over 30 days old are moved to /bak/spam/
 # then archived into a date and time stamped tar.gz file. Ideally this script
 # should be executed every so often from a cron job.
+#
 
 cd /bak/;
 mkdir /bak/spam;

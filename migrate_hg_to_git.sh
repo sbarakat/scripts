@@ -1,5 +1,9 @@
 #!/bin/bash
 
+#
+# Author: Sami Barakat <sami@sbarakat.co.uk>
+# Date: 20/11/2011
+#
 # This script has been used to migrate a Mercurial repository to Git. There
 # were extra complications as my Mercurial repo had several other projects
 # in it that I didn't want to share and I only wanted to export the version
@@ -19,6 +23,7 @@
 # changes (using the same date and comment as the Mercurial repo). It will
 # then move onto the next revision and repeat the whole process eventually
 # creating a Git repo with only the changes that were done to my_project1.
+#
 
 # Set these values for Git
 git config --global user.name "Firstname Lastname";
