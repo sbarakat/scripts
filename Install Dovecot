@@ -2,7 +2,7 @@
 
 ###############################
 #
-# Dovecot 2.0.16
+# Dovecot 2.0.17
 # http://www.dovecot.org/download.html
 #
 # Config Files
@@ -22,10 +22,15 @@ yum remove dovecot;
 # Dependencies
 yum install gcc gettext-devel;
 
+# Get public key to verify PGP keys
+gpg --recv-keys --keyserver hkp://wwwkeys.pgp.net 0x40558AC9;
+
 # Download, compile and install
 cd /usr/local/src;
-wget http://www.dovecot.org/releases/2.0/dovecot-2.0.16.tar.gz;
-tar -xvzf dovecot-2.0.16.tar.gz && cd dovecot-2.0.16;
+wget http://www.dovecot.org/releases/2.0/dovecot-2.0.17.tar.gz;
+wget http://www.dovecot.org/releases/2.0/dovecot-2.0.17.tar.gz.sig;
+gpg --verify dovecot-2.0.17.tar.gz.sig dovecot-2.0.17.tar.gz;
+tar -xvzf dovecot-2.0.17.tar.gz && cd dovecot-2.0.17;
 ./configure --sysconfdir=/etc --with-mysql --libdir=/usr/lib64;
 make;
 make install;
@@ -55,8 +60,11 @@ chmod 666 /var/log/dovecot-deliver*;
 # http://pigeonhole.dovecot.org/download.html
 #
 
+gpg --recv-keys --keyserver hkp://wwwkeys.pgp.net 0x3DFBB4F4;
 cd /usr/local/src;
 wget http://www.rename-it.nl/dovecot/2.0/dovecot-2.0-pigeonhole-0.2.5.tar.gz;
+wget http://www.rename-it.nl/dovecot/2.0/dovecot-2.0-pigeonhole-0.2.5.tar.gz.sig;
+gpg --verify dovecot-2.0-pigeonhole-0.2.5.tar.gz.sig dovecot-2.0-pigeonhole-0.2.5.tar.gz;
 tar -xvzf dovecot-2.0-pigeonhole-0.2.5.tar.gz && cd dovecot-2.0-pigeonhole-0.2.5;
 ./configure --with-dovecot=/usr/lib64/dovecot;
 make && make install;
