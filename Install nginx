@@ -2,7 +2,7 @@
 
 ###############################
 #
-# nginx 1.0.10
+# Nginx 1.0.11
 # http://nginx.org/ 
 #
 # Configuration files
@@ -15,8 +15,8 @@ yum install gcc make autoconf automake zlib-devel openssl-devel pcre pcre-devel;
 
 # Download, compile and install
 cd /usr/local/src;
-wget http://nginx.org/download/nginx-1.0.10.tar.gz;
-tar -xvzf nginx-1.0.10.tar.gz && cd nginx-1.0.10;
+wget http://nginx.org/download/nginx-1.0.11.tar.gz;
+tar -xvzf nginx-1.0.11.tar.gz && cd nginx-1.0.11;
 ./configure --prefix=/usr/local/nginx \
     --conf-path=/etc/nginx/nginx.conf \
     --pid-path=/var/run/nginx.pid \
@@ -177,19 +177,3 @@ EOF
 
 chmod 755 /etc/init.d/nginx;
 
-
-
-
-####
-# Old stuff
-#
-
-# Install Fast-CGI --- No longer needed as we are now using php-fpm
-rpm -Uvh http://download.fedora.redhat.com/pub/epel/5/x86_64/epel-release-5-4.noarch.rpm
-yum install spawn-fcgi
-#echo '/usr/bin/spawn-fcgi -a 127.0.0.1 -p 9000 -u nginx -g nginx -f /usr/bin/php-cgi -P /var/run/fastcgi-php.pid' >> /etc/rc.local;
-echo 'OPTIONS="-a 127.0.0.1 -p 9000 -u nginx -g nginx -f /usr/bin/php-cgi -P /var/run/fastcgi-php.pid"' >> /etc/sysconfig/spawn-fcgi;
-
-/etc/init.d/spawn-fcgi start
-
-/sbin/chkconfig spawn-fcgi on
