@@ -2,7 +2,7 @@
 
 ###############################
 #
-# Monit 5.3.1
+# Monit 5.3.2
 # http://mmonit.com/monit/
 #
 # Configuration files
@@ -15,9 +15,9 @@ yum install flex bison openssl-devel;
 
 # Installation
 cd /usr/local/src;
-wget http://mmonit.com/monit/dist/monit-5.3.1.tar.gz;
-echo '91a3f15c11a9b9e60e6e3b963f9f4af2acf5ca50ac6dc047d94ce50e966addc6  monit-5.3.1.tar.gz' | sha256sum -c;
-tar -xvzf monit-5.3.1.tar.gz && cd monit-5.3.1;
+wget http://mmonit.com/monit/dist/monit-5.3.2.tar.gz;
+echo '406a06ac912525c8e76066d07235c848466b331532b2b3de931b61fe455ae915  monit-5.3.2.tar.gz' | sha256sum -c;
+tar -xvzf monit-5.3.2.tar.gz && cd monit-5.3.2;
 ./configure;
 make && make install;
 
