@@ -9,5 +9,5 @@
   Script used to clear out spam and deleted mail from a mailserver.
 ./migrate_hg_to_git.sh
   Script used to move a mercurial subdirectory to a new git repository.
-./onliners
-  Useful online shell commands.
+./oneliners
+  Useful single line shell commands.
