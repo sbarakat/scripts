@@ -1,0 +1,17 @@
+#!/bin/bash
+
+###############################
+#
+# Apache
+# http://httpd.apache.org/download.cgi
+#
+# Configuration files
+# vi /etc/httpd/*
+#
+###############################
+
+yum -y install httpd mod_ssl;
+
+# Run on system startup and start now
+/sbin/chkconfig --levels 235 httpd on;
+/etc/init.d/httpd start;

@@ -1,0 +1,212 @@
+#!/bin/bash
+
+###############################
+#
+# Dovecot 2.0.17
+# http://www.dovecot.org/download.html
+#
+# Config Files
+# vi /etc/dovecot/*.conf
+#
+# Note: This script expects the Postfix script to be run first
+#
+###############################
+
+
+# Remove Dovecot if previously installed
+monit unmonitor dovecot;
+/etc/init.d/dovecot stop;
+chkconfig --del dovecot;
+yum remove dovecot;
+
+# Dependencies
+yum install gcc gettext-devel;
+
+# Get public key to verify PGP keys
+gpg --recv-keys --keyserver hkp://wwwkeys.pgp.net 0x40558AC9;
+
+# Download, compile and install
+cd /usr/local/src;
+wget http://www.dovecot.org/releases/2.0/dovecot-2.0.17.tar.gz;
+wget http://www.dovecot.org/releases/2.0/dovecot-2.0.17.tar.gz.sig;
+gpg --verify dovecot-2.0.17.tar.gz.sig dovecot-2.0.17.tar.gz;
+tar -xvzf dovecot-2.0.17.tar.gz && cd dovecot-2.0.17;
+./configure --sysconfdir=/etc --with-mysql --libdir=/usr/lib64;
+make;
+make install;
+
+# Setup Dovecot user
+/usr/sbin/useradd -s /sbin/nologin -r dovecot;
+# Dovecot user for completely untrustworthy processes
+/usr/sbin/useradd -s /sbin/nologin -r dovenull;
+
+# Secure devecot config files
+chmod 600 /etc/dovecot/dovecot*.conf;
+chown root:root /etc/dovecot/*;
+
+touch /var/log/dovecot-deliver.log;
+touch /var/log/dovecot-deliver-errors.log;
+chmod 666 /var/log/dovecot-deliver*;
+
+# Add the init script (from the bottom of this file)
+
+# Run on system startup and start now
+/sbin/chkconfig --levels 235 dovecot on;
+/etc/init.d/dovecot start;
+
+
+####
+# Adding Pigeonhole 0.2.5
+# http://pigeonhole.dovecot.org/download.html
+#
+
+gpg --recv-keys --keyserver hkp://wwwkeys.pgp.net 0x3DFBB4F4;
+cd /usr/local/src;
+wget http://www.rename-it.nl/dovecot/2.0/dovecot-2.0-pigeonhole-0.2.5.tar.gz;
+wget http://www.rename-it.nl/dovecot/2.0/dovecot-2.0-pigeonhole-0.2.5.tar.gz.sig;
+gpg --verify dovecot-2.0-pigeonhole-0.2.5.tar.gz.sig dovecot-2.0-pigeonhole-0.2.5.tar.gz;
+tar -xvzf dovecot-2.0-pigeonhole-0.2.5.tar.gz && cd dovecot-2.0-pigeonhole-0.2.5;
+./configure --with-dovecot=/usr/lib64/dovecot;
+make && make install;
+
+# Add this to dovecot.conf
+protocol lda {
+    postmaster_address = postmaster@example.com
+    hostname = mail.example.com
+    mail_plugins = pigeonhole
+
+    log_path = /var/log/dovecot-deliver-errors.log
+    info_log_path = /var/log/dovecot-deliver.log
+
+    #debug = yes
+
+    sieve_global_path = /var/spool/sieve/dovecot.sieve
+    mail_plugin_dir = /usr/local/lib/dovecot/lda
+    auth_socket_path = /var/run/dovecot/auth-master
+}
+
+plugin {
+    sieve = ~/.dovecot.sieve
+}
+
+auth default {
+    mechanisms = plain
+
+    passdb sql {
+        args                    = /etc/dovecot-mysql.conf
+    }
+    userdb sql {
+        args                    = /etc/dovecot-mysql.conf
+    }
+
+    socket listen {
+        master {
+            path = /var/run/dovecot/auth-master
+            mode = 0660
+            user = vmail
+        }
+
+        # This part should already be here
+        client {
+            user = postfix
+            group = postfix
+            path = /var/spool/postfix/private/auth
+            mode = 0660
+        }
+    }
+}
+
+
+# Add this to the bottom of /etc/postfix/master.cf
+dovecot   unix  -       n       n       -       -       pipe
+  flags=DRhu user=vmail:mail argv=/usr/local/libexec/dovecot/deliver -f ${sender} -d ${recipient}
+
+# Change this setting in /etc/postfix/main.cf
+#virtual_transport                       = virtual
+virtual_transport                       = dovecot
+
+# Restart the services
+/etc/init.d/postfix restart;
+/etc/init.d/dovecot restart;
+
+
+####
+# Init script
+#
+cat >> /etc/init.d/dovecot << "EOF"
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides:          dovecot
+# Required-Start:    $local_fs $remote_fs $network $syslog $time
+# Required-Stop:     $local_fs $remote_fs $network $syslog
+# Should-Start:      postgresql mysql slapd winbind
+# Should-Stop:       postgresql mysql slapd winbind
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Dovecot init script
+# Description:       Init script for dovecot services
+### END INIT INFO
+
+# Example /etc/init.d/dovecot script. Change DAEMON if necessary.
+# License is public domain.
+
+DAEMON=/usr/local/sbin/dovecot
+
+# Uncomment to allow Dovecot daemons to produce core dumps.
+#ulimit -c unlimited
+
+test -x $DAEMON || exit 1
+set -e
+
+base_dir=`$DAEMON config -h base_dir`
+pidfile=$base_dir/master.pid
+
+if test -f $pidfile; then
+  running=yes
+else
+  running=no
+fi
+
+case "$1" in
+  start)
+    echo -n "Starting Dovecot"
+    $DAEMON
+    echo "."
+    ;;
+  stop)
+    if test $running = yes; then
+      echo "Stopping Dovecot"
+      kill `cat $pidfile`
+      echo "."
+    else
+      echo "Dovecot is already stopped."
+    fi
+    ;;
+  reload)
+    if test $running = yes; then
+      echo -n "Reloading Dovecot configuration"
+      kill -HUP `cat $pidfile`
+      echo "."
+    else
+      echo "Dovecot isn't running."
+    fi
+    ;;
+  restart|force-reload)
+    echo -n "Restarting Dovecot"
+    if test $running = yes; then
+      kill `cat $pidfile`
+      sleep 1
+    fi
+    $DAEMON
+    echo "."
+    ;;
+  *)
+    echo "Usage: /etc/init.d/dovecot {start|stop|reload|restart|force-reload}" >&2
+    exit 1
+    ;;
+esac
+
+exit 0
+EOF
+
+chmod 755 /etc/init.d/dovecot;

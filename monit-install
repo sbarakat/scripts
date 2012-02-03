@@ -1,0 +1,30 @@
+#!/bin/bash
+
+###############################
+#
+# Monit 5.3.2
+# http://mmonit.com/monit/
+#
+# Configuration files
+# vi /etc/monitrc
+#
+###############################
+
+# Dependancies
+yum install flex bison openssl-devel;
+
+# Installation
+cd /usr/local/src;
+wget http://mmonit.com/monit/dist/monit-5.3.2.tar.gz;
+echo '406a06ac912525c8e76066d07235c848466b331532b2b3de931b61fe455ae915  monit-5.3.2.tar.gz' | sha256sum -c;
+tar -xvzf monit-5.3.2.tar.gz && cd monit-5.3.2;
+./configure;
+make && make install;
+
+# Settings file
+touch /etc/monitrc;
+chmod 600 /etc/monitrc;
+
+# Run on system startup and start now
+echo '/usr/local/bin/monit -c /etc/monitrc -p /var/run/monit.pid' >> /etc/rc.local;
+/usr/local/bin/monit -c /etc/monitrc -p /var/run/monit.pid;

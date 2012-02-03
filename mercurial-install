@@ -1,0 +1,64 @@
+#!/bin/bash
+
+###############################
+#
+# Mercurial 1.8.2
+# http://mercurial.selenic.com/downloads/
+#
+###############################
+
+# Dependencies
+yum -y install python python-devel;
+
+# Download and install
+cd /usr/local/src;
+wget http://mercurial.selenic.com/release/mercurial-1.8.2.tar.gz;
+tar -xvzf mercurial-1.8.2.tar.gz && cd mercurial-1.8.2;
+python setup.py install;
+
+
+####
+# Setup hgwebdir for Publishing Repositories
+#  http://mercurial.selenic.com/wiki/HgWebDirStepByStep
+#
+
+# Copy hgwebdir.cgi from the source files to webserver root
+mkdir /srv/www/hg;
+cp hgwebdir.cgi /srv/www/hg;
+
+# Setup mercurial group and add users to it
+/usr/sbin/groupadd mercurial
+/usr/sbin/usermod -a -G mercurial nginx
+
+# Setup file permissions
+chown -R nginx:mercurial /srv/www/hg/;
+find /srv/www/hg/ -type d -exec chmod 775 {} \;
+find /srv/www/hg/ -type f -exec chmod 664 {} \;
+chmod 755 /srv/www/hg/hgwebdir.cgi;
+
+# Create a link in the root for easy ssh access
+ln -s /srv/www/hg/ /hg
+
+# Set trusted users
+mkdir /etc/mercurial;
+cat >> /etc/mercurial/hgrc << "EOF"
+[trusted]
+users = nginx
+EOF
+
+
+####
+# Testing
+#
+
+# Setup an example repository
+cd /hg
+hg clone http://selenic.com/repo/hello hello;
+
+cat >> hgweb.config << "EOF"
+[paths]
+/hello = /srv/www/hg/hello
+EOF
+
+# Clone a repo with this
+hg clone ssh://user@myhost.com//hg/hello

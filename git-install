@@ -1,0 +1,15 @@
+#!/bin/bash
+
+###############################
+#
+# Git 1.7.7.3
+# http://git-scm.com/
+#
+###############################
+
+cd /usr/local/src;
+wget http://git-core.googlecode.com/files/git-1.7.7.3.tar.gz;
+echo '382ee40da74a1b4a1875820c0f0a35c9ccd750f8  git-1.7.7.3.tar.gz' | sha1sum -c;
+tar -xvzf git-1.7.7.3.tar.gz && cd git-1.7.7.3;
+./configure;
+make && make install;
