@@ -1,0 +1,40 @@
+#!/bin/bash
+
+###############################
+#
+# libTorrent and rTorrent
+# http://libtorrent.rakshasa.no/
+#
+###############################
+
+# Remove rTorrent and libTorrent if installed
+sudo apt-get remove rtorrent libtorrent*;
+
+# Make sure we are up to date
+sudo apt-get update && sudo apt-get upgrade;
+
+# Install dependencies
+sudo apt-get install subversion build-essential libtool automake openssl libsigc++-2.0-dev libncurses5-dev libcurl4-openssl-dev;
+
+# Download, build and install libtorrent
+cd /usr/local/src && wget http://libtorrent.rakshasa.no/downloads/libtorrent-0.12.9.tar.gz;
+tar -xvzf libtorrent-0.12.9.tar.gz && cd libtorrent-0.12.9;
+./configure;
+make && sudo make install;
+cd .. && rm -r libtorrent-0.12.9*;
+
+# Download, build and install rtorrent
+cd /usr/local/src && wget http://libtorrent.rakshasa.no/downloads/rtorrent-0.8.9.tar.gz;
+tar -xvzf rtorrent-0.8.9.tar.gz && cd rtorrent-0.8.9;
+./configure --libdir=/usr/local/lib;
+make && sudo make install;
+cd .. && rm -r rtorrent-0.8.9*;
+
+# Fixes library issue
+#    rtorrent: error while loading shared libraries: libtorrent.so.11: cannot open shared object file: No such file or directory
+echo "include /usr/local/lib" | sudo tee -a /etc/ld.so.conf;
+sudo ldconfig;
+
+# Config file
+cd ~ && wget http://libtorrent.rakshasa.no/browser/trunk/rtorrent/doc/rtorrent.rc?format=raw;
+mv rtorrent.rc?format=raw .rtorrent.rc;
