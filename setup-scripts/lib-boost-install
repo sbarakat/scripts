@@ -16,7 +16,7 @@ sudo apt-get install libbz2-dev;
 wget http://downloads.sourceforge.net/project/boost/boost/1.48.0/boost_1_48_0.tar.gz;
 tar -xvzf boost_1_48_0.tar.gz && cd boost_1_48_0/;
 
-./bootstrap.sh --with-libraries=filesystem,regex,program_options,system --exec-prefix=/usr/local;
+./bootstrap.sh --with-libraries=system,filesystem,regex,thread,program_options --exec-prefix=/usr/local
 
 ./b2;
 
