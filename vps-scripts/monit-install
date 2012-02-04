@@ -22,8 +22,10 @@ tar -xvzf monit-5.3.2.tar.gz && cd monit-5.3.2;
 make && make install;
 
 # Settings file
-touch /etc/monitrc;
+wget https://raw.github.com/sbarakat/scripts/master/vps-scripts/monit-monitrc -O /etc/monitrc;
+chown root:root /etc/monitrc;
 chmod 600 /etc/monitrc;
+vi /etc/monitrc;
 
 # Run on system startup and start now
 echo '/usr/local/bin/monit -c /etc/monitrc -p /var/run/monit.pid' >> /etc/rc.local;

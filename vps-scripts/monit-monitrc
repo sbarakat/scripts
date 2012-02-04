@@ -1,0 +1,229 @@
+# Check services every 5mins
+set daemon 300
+
+# logfile location
+set logfile /var/log/monit.log
+
+# Email notifications
+#set mailserver localhost  # A local mailserver may be down, better to use gmail
+set mailserver smtp.gmail.com port 587
+    username "googleuser@gmail.com" password "googlepass"
+    using tlsv1
+    with timeout 30 seconds
+set mail-format { from: monit@example.com }
+set alert googleuser@gmail.com  # Send alerts to this address
+
+# Web interface
+set httpd port 2812 and  # Port to access web interface
+    #SSL ENABLE
+    #PEMFILE  /etc/ssl/cacert.pem
+    allow myuser:mypass  # Username and password for web interface
+
+
+####
+# System
+#
+check system example.com
+    if loadavg (1min) > 4 then alert
+    if loadavg (5min) > 2 then alert
+    if memory usage > 80% then alert
+    if cpu usage (user) > 70% then alert
+    if cpu usage (system) > 50% then alert
+    if cpu usage (wait) > 40% then alert
+
+
+####
+# nginx
+#
+# - php is running if http://example.com/token.php exists
+check process php-fpm with pidfile /var/run/php-fpm.pid
+    start program = "/etc/init.d/php-fpm start"
+    stop program = "/etc/init.d/php-fpm stop"
+    if failed host example.com port 80 protocol HTTP request /token.php then restart
+    if 5 restarts within 5 cycles then timeout
+    depends on nginx
+# - nginx is running if http://example.com/token.html exists
+check process nginx with pidfile /var/run/nginx.pid
+    start program = "/etc/init.d/nginx start"
+    stop program = "/etc/init.d/nginx stop"
+    if failed host example.com port 80 protocol HTTP request /token.html then restart
+    if 5 restarts within 5 cycles then timeout
+
+
+####
+# MySQL
+#
+check process mysql with pidfile /var/run/mysqld/mysqld.pid
+    group database
+    start program = "/etc/init.d/mysqld start"
+    stop program = "/etc/init.d/mysqld stop"
+    if failed host 127.0.0.1 port 3306 then restart
+    if 5 restarts within 5 cycles then timeout
+    depends on mysql_bin
+    depends on mysql_rc
+check file mysql_bin with path /usr/bin/mysql
+    group database
+    if failed checksum then unmonitor
+    if failed permission 755 then unmonitor
+    if failed uid root then unmonitor
+    if failed gid root then unmonitor
+check file mysql_rc with path /etc/init.d/mysqld
+    group database
+    if failed checksum then unmonitor
+    if failed permission 755 then unmonitor
+    if failed uid root then unmonitor
+    if failed gid root then unmonitor
+
+
+####
+# Postfix
+#
+check process postfix with pidfile /var/spool/postfix/pid/master.pid
+    group mail
+    start program = "/etc/init.d/postfix start"
+    stop  program = "/etc/init.d/postfix stop"
+    if failed port 25 protocol smtp then restart
+    if 5 restarts within 5 cycles then timeout
+    depends on postfix_rc
+check file postfix_rc with path /etc/init.d/postfix
+    group mail
+    if failed checksum then unmonitor
+    if failed permission 755 then unmonitor
+    if failed uid root then unmonitor
+    if failed gid root then unmonitor
+
+
+####
+# ASSP
+#
+check process assp with pidfile /opt/assp/pid
+    group mail
+    start program = "/etc/init.d/assp start"
+    stop  program = "/etc/init.d/assp stop"
+    if failed host example.com port 25 type tcp protocol smtp with timeout 15 seconds then alert
+    if 5 restarts within 5 cycles then timeout
+    depends on assp_rc
+check file assp_rc with path /etc/init.d/assp
+    group mail
+    if failed checksum then unmonitor
+    if failed permission 755 then unmonitor
+    if failed uid root then unmonitor
+    if failed gid root then unmonitor
+
+
+####
+# PowerDNS
+#
+check process pdns-recursor with pidfile /var/run/pdns_recursor.pid
+    start program = "/etc/init.d/pdns-recursor start"
+    stop  program = "/etc/init.d/pdns-recursor stop"
+    if failed host 127.0.0.1 port 53 then restart
+    if 5 restarts within 5 cycles then timeout
+    depends on pdns-recursor_rc
+check file pdns-recursor_rc with path /etc/init.d/pdns-recursor
+    if failed checksum then unmonitor
+    if failed permission 755 then unmonitor
+    if failed uid root then unmonitor
+    if failed gid root then unmonitor
+
+
+####
+# Dovecot
+#
+check process dovecot with pidfile /var/run/dovecot/master.pid
+    group mail
+    start program = "/etc/init.d/dovecot start"
+    stop program = "/etc/init.d/dovecot stop"
+    if failed host mail.example.com port 993 type tcpssl sslauto protocol imap then restart
+    if 5 restarts within 5 cycles then timeout
+    depends dovecot_init
+    depends dovecot_bin
+check file dovecot_init with path /etc/init.d/dovecot
+    group mail
+check file dovecot_bin with path /usr/local/sbin/dovecot
+    group mail
+
+check process saslauth with pidfile /var/run/saslauthd/saslauthd.pid
+    group mail
+    start program = "/etc/init.d/saslauthd start"
+    stop program = "/etc/init.d/saslauthd stop"
+    depends saslauthd_init
+    depends saslauthd_bin
+check file saslauthd_init with path /etc/init.d/saslauthd
+    group mail
+check file saslauthd_bin with path /usr/sbin/saslauthd
+    group mail
+
+
+####
+# ClamAV
+#
+check process clamavd with pidfile /var/run/clamav/clamd.pid
+   start program = "/etc/init.d/clamd start"
+   stop  program = "/etc/init.d/clamd stop"
+   if failed unixsocket /var/run/clamav/clamd.sock then restart
+   if 5 restarts within 5 cycles then timeout
+
+
+####
+# SSH
+#
+check process sshd with pidfile /var/run/sshd.pid
+    start program  "/etc/init.d/sshd start"
+    stop program  "/etc/init.d/sshd stop"
+    if failed port 22 protocol ssh then restart
+    if 5 restarts within 5 cycles then timeout
+
+
+####
+# NTP
+#
+check process ntp with pidfile /var/run/ntpd.pid
+    group system
+    start program = "/etc/init.d/ntpd start"
+    stop program = "/etc/init.d/ntpd stop"
+    if failed port 123 type udp then restart
+
+
+####
+# Cron
+#
+check process cron with pidfile /var/run/crond.pid
+    group system
+    start = "/etc/init.d/crond start"
+    stop = "/etc/init.d/crond stop"
+    if 5 restarts within 5 cycles then timeout
+    depends on cron_rc
+check file cron_rc with path /etc/init.d/crond
+    group system
+    if failed checksum then unmonitor
+    if failed permission 755 then unmonitor
+    if failed uid root then unmonitor
+    if failed gid root then unmonitor
+
+
+####
+# Apache
+#
+#check process httpd with pidfile /var/run/httpd.pid
+#    group apache
+#    start program = "/etc/init.d/httpd start"
+#    stop program = "/etc/init.d/httpd stop"
+#    if failed host example.com port 80 protocol http
+#        and request "/index.html" then restart
+#    if cpu > 60% for 2 cycles then alert
+#    if cpu > 80% for 5 cycles then restart
+#    if children > 20 then restart
+#    if loadavg(5min) greater than 10 for 8 cycles then stop
+#    if 3 restarts within 5 cycles then timeout
+#    if totalmem > 200 MB for 5 cycles then restart
+
+
+####
+# ProFTPD
+#check process proftpd with pidfile /var/run/proftpd.pid
+#    start program = "/etc/init.d/proftpd start"
+#    stop program  = "/etc/init.d/proftpd stop"
+#    if failed port 21 protocol ftp then restart
+#    if 5 restarts within 5 cycles then timeout
+
