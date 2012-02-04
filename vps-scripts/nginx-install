@@ -35,6 +35,7 @@ make && make install;
 
 # Init script
 wget https://raw.github.com/sbarakat/scripts/master/vps-scripts/nginx-init -O /etc/init.d/nginx;
+chown root:root /etc/init.d/nginx;
 chmod 755 /etc/init.d/nginx;
 
 # Start on start up

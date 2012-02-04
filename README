@@ -2,12 +2,16 @@
 ./setup-scripts/
   Contains installation and configuration scripts for various apps and
   libraries. Mostly used under an Xubuntu desktop.
+
 ./vps-scripts/
   Contains installation and configuration scripts for a CentOS Virtual Private
   Server. Mostly webserver and mailserver stuff.
+
 ./expire_mail.sh
   Script used to clear out spam and deleted mail from a mailserver.
+
 ./migrate_hg_to_git.sh
   Script used to move a mercurial subdirectory to a new git repository.
+
 ./oneliners
   Useful single line shell commands.

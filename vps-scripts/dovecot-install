@@ -50,6 +50,7 @@ chmod 666 /var/log/dovecot-deliver*;
 
 # Init script
 wget https://raw.github.com/sbarakat/scripts/master/vps-scripts/dovecot-init -O /etc/init.d/dovecot;
+chown root:root /etc/init.d/dovecot;
 chmod 755 /etc/init.d/dovecot;
 
 # Run on system startup and start now
