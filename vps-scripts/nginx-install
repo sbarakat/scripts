@@ -34,7 +34,7 @@ make && make install;
 /usr/sbin/useradd -s /sbin/nologin -r nginx
 
 # Init script
-wget https://raw.github.com/sbarakat/scripts/master/vps-scripts/nginx-init -O /etc/init.d/nginx;
+wget https://raw.github.com/sbarakat/scripts/master/vps-scripts/nginx-init.d -O /etc/init.d/nginx;
 chown root:root /etc/init.d/nginx;
 chmod 755 /etc/init.d/nginx;
 
