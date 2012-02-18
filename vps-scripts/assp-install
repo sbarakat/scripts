@@ -1,0 +1,163 @@
+#!/bin/bash
+
+###############################
+#
+# ASSP 1.8.5.7(1.1.01)
+# http://assp.sourceforge.net/
+#
+###############################
+
+# Install ASSP
+cd /usr/local/src/;
+wget http://downloads.sourceforge.net/project/assp/ASSP%20Installation/ASSP%201.7.1.4/ASSP_1.7.1.4-Install.zip?use_mirror=kent;
+unzip ASSP_1.7.1.4-Install.zip;
+mv ASSP_1.7.1.4-Install/ASSP/ /opt/assp/;
+cd /opt/assp/;
+
+mkdir -p /opt/assp/spam;
+mkdir /opt/assp/notspam;
+mkdir /opt/assp/errors;
+mkdir /opt/assp/errors/spam;
+mkdir /opt/assp/errors/notspam;
+
+chown -R 0.0 /opt/assp;
+
+# Install perl modules
+cd /opt/assp;
+perl mod_inst.pl;
+
+# If the above errors try installing them manually
+# either using yum
+yum install perl-CPAN perl-Authen-SASL.noarch perl-Compress-Zlib.x86_64 \
+  perl-Digest-SHA1.x86_64 perl-MIME-Types.noarch perl-MIME-tools.noarch \
+  perl-Net-DNS.x86_64 perl-Time-HiRes.x86_64 perl-IO-Socket-SSL.noarch
+# or CPAN
+perl -MCPAN -e shell
+install Bundle::CPAN
+reload cpan
+install Compress::Zlib
+install Digest::MD5
+install Email::Valid
+install File::ReadBackwards
+force install Mail::SPF::Query
+install Mail::SRS
+install Net::DNS
+install Sys::Syslog
+#install Net::LDAP # not needed
+install Time::HiRes
+install Email::MIME::Modifier
+force install MIME::Tools
+install MIME::Words
+
+# Start ASSP
+perl assp.pl;
+
+# Setup ASSP user
+/usr/sbin/useradd -s /sbin/nologin -r assp;
+
+# Browse to - http://example.com:55555
+# user/pass: anything/nospam4me
+
+# Set these configuration values from the web interface
+Network Setup
+    SMTP Listen Port          111.111.111.111:25         The spam proxy
+    SMTP Destination          127.0.0.1:25            The internal Postfix
+
+Test Mode
+    All TestModes ON          Yes
+
+Relaying
+    Local Domains*            mydomain.com|example.com|mydomain.co.uk
+    Skip Local Domain Check   Yes                     *Important* This prevents being an open relay
+
+Server Setup 
+    Run ASSP as a Daemon      Yes
+    Run as UID                assp
+    Run as GID                assp
+    Web Admin Port            2222
+    Web Admin Password        enter a pass
+
+Ctrl+C to quite
+
+# Update permissions
+chown -R assp:assp /opt/assp/;
+
+# Init script
+wget https://raw.github.com/sbarakat/scripts/master/vps-scripts/assp-init.d -O /etc/init.d/assp;
+chown root:root /etc/init.d/assp;
+chmod 755 /etc/init.d/assp;
+
+# Update Postfix
+vi /etc/postfix/master.cf;
+
+Change:
+  smtp      inet  n       -       n       -       -       smtpd
+to:
+  localhost:smtp   inet  n       -       n       -       -       smtpd
+
+# Restart Postfix and start up assp to ensure minimal mail drops
+/etc/init.d/postfix restart; /etc/init.d/assp start;
+
+# Run on system startup ***MAKE SURE IT APPEARS BEFORE MONIT***
+echo '/etc/init.d/assp start' >> /etc/rc.local;
+
+# Manual rebuild of spamdb
+cd /opt/assp && perl rebuildspamdb.pl;
+
+
+####
+# Enable SSL
+#
+
+# Perl modules
+perl -MCPAN -e shell
+install IO::Socket::SSL
+
+# If you get the error
+#  You need the XS Version of Scalar::Util for dualvar() support at Makefile.PL line 56.
+# do
+#  force install Scalar::Util
+
+Network Setup
+    Enable SSL/TLS support    Yes
+    SMTP Secure Listen Port   465
+    SSL Certificate File      /etc/ssl/smtp.example.com.crt
+    SSL Key File              /etc/ssl/smtp.example.com.key
+
+
+####
+# Install ClamAV
+#
+
+# Add the repo
+cat > /etc/yum.repos.d/dag.repo << "EOF"
+[dag]
+name=Dag RPM Repository for Red Hat Enterprise Linux
+baseurl=http://apt.sw.be/redhat/el$releasever/en/$basearch/dag/
+gpgcheck=1
+gpgkey=http://dag.wieers.com/packages/RPM-GPG-KEY.dag.txt
+enabled=1
+EOF
+
+# Install & Start
+yum install clamd;
+/sbin/chkconfig clamd on;
+/etc/init.d/clamd start;
+
+# Refresh clam
+freshclam;
+
+# Install perl module
+perl -MCPAN -e shell
+install File::Scan::ClamAV
+
+# ASSP Settings
+EmailVirusReportsTo = admin@example.com
+UseAvClamd = on
+AvClamdPort = /var/run/clamav/clamd.sock
+
+# Restart ASSP
+/etc/init.d/assp restart;
+
+# Check ClamAV with this tool
+http://www.gfi.com/emailsecuritytest/
