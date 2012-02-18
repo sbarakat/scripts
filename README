@@ -10,6 +10,13 @@
 ./expire_mail.sh
   Script used to clear out spam and deleted mail from a mailserver.
 
+./fix_mail_date.sh
+  Found this on the interwebs and solved an issue I had with email message 
+  dates being messed up. Keeping a copy just incase.
+
+./interfacelift.sh
+  Changes wallpaper to the latest 1080p image from interfacelift.com.
+
 ./migrate_hg_to_git.sh
   Script used to move a mercurial subdirectory to a new git repository.
 
