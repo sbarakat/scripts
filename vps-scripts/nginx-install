@@ -2,7 +2,7 @@
 
 ###############################
 #
-# Nginx 1.0.11
+# Nginx 1.0.12
 # http://nginx.org/ 
 #
 # Configuration files
@@ -13,10 +13,15 @@
 # Dependencies
 yum install gcc make autoconf automake zlib-devel openssl-devel pcre pcre-devel;
 
+# Get public key to verify PGP keys
+gpg --recv-keys --keyserver hkp://wwwkeys.pgp.net 0xA1C052F8;
+
 # Download, compile and install
 cd /usr/local/src;
-wget http://nginx.org/download/nginx-1.0.11.tar.gz;
-tar -xvzf nginx-1.0.11.tar.gz && cd nginx-1.0.11;
+wget http://nginx.org/download/nginx-1.0.12.tar.gz;
+wget http://nginx.org/download/nginx-1.0.12.tar.gz.asc;
+gpg --verify nginx-1.0.12.tar.gz.asc;
+tar -xvzf nginx-1.0.12.tar.gz && cd nginx-1.0.12;
 ./configure --prefix=/usr/local/nginx \
     --conf-path=/etc/nginx/nginx.conf \
     --pid-path=/var/run/nginx.pid \
@@ -31,7 +36,7 @@ tar -xvzf nginx-1.0.11.tar.gz && cd nginx-1.0.11;
 make && make install;
 
 # Setup nginx user
-/usr/sbin/useradd -s /sbin/nologin -r nginx
+/usr/sbin/useradd -s /sbin/nologin -r nginx;
 
 # Init script
 wget https://raw.github.com/sbarakat/scripts/master/vps-scripts/nginx-init.d -O /etc/init.d/nginx;
@@ -39,8 +44,8 @@ chown root:root /etc/init.d/nginx;
 chmod 755 /etc/init.d/nginx;
 
 # Start on start up
-/sbin/chkconfig --add nginx
-/sbin/chkconfig --level 2345 nginx on
-/etc/init.d/nginx start
+/sbin/chkconfig --add nginx;
+/sbin/chkconfig --level 2345 nginx on;
+service nginx start;
 
-ln -s /usr/local/sbin/nginx /usr/sbin/nginx
+ln -s /usr/local/sbin/nginx /usr/sbin/nginx;
