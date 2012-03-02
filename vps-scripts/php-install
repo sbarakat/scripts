@@ -12,7 +12,7 @@
 
 
 ####
-# PHP 5.3.8 - Install from sources
+# PHP 5.3.10 - Install from sources
 # - http://www.php.net/downloads.php
 #
 
@@ -25,15 +25,15 @@ yum install gcc \
 # libmcrypt libmcrypt-devel not avaliable in CentOS 6 (so we cant use phpMyAdmin)
 
 cd /usr/local/src;
-wget http://uk.php.net/get/php-5.3.8.tar.gz/from/this/mirror;
-echo 'f4ce40d5d156ca66a996dbb8a0e7666a  php-5.3.8.tar.gz' | md5sum -c;
-tar -xvzf php-5.3.8.tar.gz && cd php-5.3.8;
+wget http://uk.php.net/get/php-5.3.10.tar.gz/from/this/mirror;
+echo '2b3d2d0ff22175685978fb6a5cbcdc13  php-5.3.10.tar.gz' | md5sum -c;
+tar -xvzf php-5.3.10.tar.gz && cd php-5.3.10;
 
 ./configure \
     --with-libdir=lib64 \                      # for 64bit machines
     --sysconfdir=/etc/php \
     --with-config-file-path=/etc/php \
-    --with-mysql=/usr/lib \
+    --with-mysql=/usr/local/mysql \
     --with-mysqli=/usr/bin/mysql_config \
     --with-jpeg-dir=/usr/local \
     --with-png-dir=/usr/lib \
@@ -85,7 +85,7 @@ vi /etc/php/php-fpm.conf;
 #pm.max_spare_servers = 35
 
 /sbin/chkconfig php-fpm on;
-/etc/init.d/php-fpm start;
+service php-fpm start;
 
 # Test it
 echo '<?php phpinfo(); ?>' > /var/www/html/phpinfo.php;
