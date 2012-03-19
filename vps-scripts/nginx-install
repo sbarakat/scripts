@@ -2,7 +2,7 @@
 
 ###############################
 #
-# Nginx 1.0.12
+# Nginx 1.0.14
 # http://nginx.org/ 
 #
 # Configuration files
@@ -18,10 +18,10 @@ gpg --recv-keys --keyserver hkp://wwwkeys.pgp.net 0xA1C052F8;
 
 # Download, compile and install
 cd /usr/local/src;
-wget http://nginx.org/download/nginx-1.0.12.tar.gz;
-wget http://nginx.org/download/nginx-1.0.12.tar.gz.asc;
-gpg --verify nginx-1.0.12.tar.gz.asc;
-tar -xvzf nginx-1.0.12.tar.gz && cd nginx-1.0.12;
+wget http://nginx.org/download/nginx-1.0.14.tar.gz;
+wget http://nginx.org/download/nginx-1.0.14.tar.gz.asc;
+gpg --verify nginx-1.0.14.tar.gz.asc;
+tar -xvzf nginx-1.0.14.tar.gz && cd nginx-1.0.14;
 ./configure --prefix=/usr/local/nginx \
     --conf-path=/etc/nginx/nginx.conf \
     --pid-path=/var/run/nginx.pid \
