@@ -8,11 +8,12 @@
 ###############################
 
 # Install ASSP
-cd /usr/local/src/;
-wget http://downloads.sourceforge.net/project/assp/ASSP%20Installation/ASSP%201.7.1.4/ASSP_1.7.1.4-Install.zip?use_mirror=kent;
-unzip ASSP_1.7.1.4-Install.zip;
-mv ASSP_1.7.1.4-Install/ASSP/ /opt/assp/;
-cd /opt/assp/;
+cd /usr/local/src/
+wget http://downloads.sourceforge.net/project/assp/ASSP%20V2%20multithreading/2.4.1%2014167/ASSP_2.4.1_14167_install.zip
+unzip ASSP_2.4.1_14167_install.zip
+mkdir /opt/assp/
+mv assp/* /opt/assp/
+rm -rf assp/ ASSP_* Install.txt MacOSX-launchd.txt quickstart.txt Win32-quickstart-guide.txt
 
 mkdir -p /opt/assp/spam;
 mkdir /opt/assp/notspam;
@@ -20,7 +21,50 @@ mkdir /opt/assp/errors;
 mkdir /opt/assp/errors/spam;
 mkdir /opt/assp/errors/notspam;
 
-chown -R 0.0 /opt/assp;
+chown -R nobody:nogroup /opt/assp
+chmod 755 /opt/assp/assp.pl
+
+
+apt-get install build-essential \
+        pmtools libterm-readline-perl-perl libterm-readline-gnu-perl libyaml-perl \
+        libtext-glob-perl libnumber-compare-perl libio-compress-perl libemail-mime-perl \
+        libemail-send-perl libemail-valid-perl libfile-readbackwards-perl libwww-perl \
+        libmime-types-perl libmail-dkim-perl libmail-spf-perl libmail-srs-perl \
+        libnet-cidr-lite-perl libnet-dns-perl libnet-ldap-perl libnet-smtp-server-perl \
+        libthreads-perl libthread-queue-any-perl libtie-dbi-perl libschedule-cron-perl \
+        libio-socket-ssl-perl libdbd-csv-perl libdbd-ldap-perl \
+        libdbd-mock-perl libdbd-odbc-perl libdbd-mysql-perl libfile-find-rule-perl \
+        libfile-slurp-perl libfile-which-perl libfile-chmod-perl liblinux-usermod-perl \
+        libcrypt-rc4-perl libtext-pdf-perl libsmart-comments-perl libcam-pdf-perl \
+        libpdf-api2-perl imagemagick perlmagick poppler-utils xpdf libauthen-sasl-perl \
+        libregexp-optimizer-perl libnet-smtp-tls-perl liblingua-stem-snowball-perl \
+        liblingua-identify-perl unzip libberkeleydb-perl
+
+libdbd-anydata-perl
+libnet-snmp-perl libsnmp-base libsnmp-dev libsnmp-perl snmp libsnmp-*-perl libsnmpkit-dev
+
+apt-get install tesseract-ocr tesseract-ocr-*
+apt-get install libmodule-signature-perl libtest-pod-perl libtest-pod-coverage-perl libarchive-zip-perl
+apt-get install libssl-dev
+
+cpan
+install CPAN
+reload cpan
+force install Mail::SPF::Query
+install Thread::State
+install Sys::CpuAffinity
+install Sys::MemInfo
+install Unicode::GCString
+install Text::Unidecode
+install Convert::TNEF
+install Digest::SHA1
+install NetSNMP::agent
+install File::Scan::ClamAV
+install Archive::Zip
+
+Net::IP::Match::Regexp Net::SenderBase Net::Syslog Thread::State Sys::MemInfo Crypt::CBC Crypt::OpenSSL::AES DBD::Log DBD::MVS_FTPSQL DBD::Multiplex DBD::Ovrimos DBD::PgPP DBD::Sprite DBD::Template DBD::mysqlPP DBIx::AnyDBD LEOCHARRE::DEBUG LEOCHARRE::CLI PDF::Burst Image::OCR::Tesseract PDF::GetImages PDF::OCR PDF::OCR2 Mail::DKIM::Verifier Convert::Scalar Unicode::GCString Sys::CpuAffinity
+
+
 
 # Install perl modules
 cd /opt/assp;
